@@ -1,13 +1,18 @@
 #include "Communication/BTSerialCommunicationManager.h"
 
+
+#if _WIN32
 #include <Windows.h>
 #include <ws2bth.h>
+#elif __APPLE__
+#endif
+
 
 #include <utility>
 
 #include "DriverLog.h"
 #include "Util/Logic.h"
-#include "Util/Windows.h"
+#include "Util/System.h"
 
 BTSerialCommunicationManager::BTSerialCommunicationManager(
     const VRCommunicationConfiguration& configuration, std::unique_ptr<EncodingManager> encodingManager)
@@ -19,6 +24,7 @@ bool BTSerialCommunicationManager::IsConnected() {
 }
 
 bool BTSerialCommunicationManager::Connect() {
+#if _WIN32
   // We're not yet connected
   isConnected_ = false;
 
@@ -31,10 +37,13 @@ bool BTSerialCommunicationManager::Connect() {
   // If everything went fine we're connected
   isConnected_ = true;
   LogMessage("Connected to bluetooth");
+#elif __APPLE__
+#endif
   return true;
 }
 
 bool BTSerialCommunicationManager::DisconnectFromDevice() {
+#if _WIN32
   if (shutdown(btClientSocket_, 2) == SOCKET_ERROR) {
     LogMessage("Could not disconnect socket from bluetooth device");
     return false;
@@ -42,10 +51,13 @@ bool BTSerialCommunicationManager::DisconnectFromDevice() {
 
   isConnected_ = false;
   LogMessage("Disconnected from socket successfully");
+#elif __APPLE__
+#endif
   return true;
 }
 
 bool BTSerialCommunicationManager::ReceiveNextPacket(std::string& buff) {
+#if _WIN32
   char nextChar = 0;
   do {
     const int receiveResult = recv(btClientSocket_, &nextChar, 1, 0);
@@ -59,11 +71,13 @@ bool BTSerialCommunicationManager::ReceiveNextPacket(std::string& buff) {
   } while (threadActive_ && (nextChar != '\n' || buff.length() < 1));
 
   if (!threadActive_) return false;
-
+#elif __APPLE__
+#endif
   return true;
 }
 
 bool BTSerialCommunicationManager::SendMessageToDevice() {
+#if _WIN32
   const char* message = writeString_.c_str();
 
   if (!Retry([&]() { return send(btClientSocket_, message, static_cast<int>(writeString_.length()), 0) != SOCKET_ERROR; }, 5, 10)) {
@@ -72,11 +86,13 @@ bool BTSerialCommunicationManager::SendMessageToDevice() {
     closesocket(btClientSocket_);
     WSACleanup();
   }
-
+#elif __APPLE__
+#endif
   return true;
 }
 
 bool BTSerialCommunicationManager::ConnectToDevice(const BTH_ADDR& deviceBtAddress) {
+#if _WIN32
   btClientSocket_ = socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);  // initialize BT windows socket
 
   SOCKADDR_BTH btSocketAddress{};
@@ -94,11 +110,13 @@ bool BTSerialCommunicationManager::ConnectToDevice(const BTH_ADDR& deviceBtAddre
   DWORD timeout = 1000;
   setsockopt(btClientSocket_, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(timeout));
   setsockopt(btClientSocket_, SOL_SOCKET, SO_SNDTIMEO, (char*)&timeout, sizeof(timeout));
-
+#elif __APPLE__
+#endif
   return true;
 }
 
 bool BTSerialCommunicationManager::GetPairedDeviceBtAddress(BTH_ADDR* deviceBtAddress) {
+#if _WIN32
   constexpr BLUETOOTH_DEVICE_SEARCH_PARAMS btDeviceSearchParameters = {
       sizeof(BLUETOOTH_DEVICE_SEARCH_PARAMS),  // size of object
       1,                                       // return authenticated devices
@@ -139,10 +157,13 @@ bool BTSerialCommunicationManager::GetPairedDeviceBtAddress(BTH_ADDR* deviceBtAd
 
   LogMessage("Could not find paired Bluetooth Device");
   *deviceBtAddress = NULL;
+#elif __APPLE__
+#endif
   return false;
 }
 
 bool BTSerialCommunicationManager::StartupWindowsSocket() {
+#if _WIN32
   constexpr WORD wVersionRequested = MAKEWORD(2, 2);
   WSADATA wsaData;
 
@@ -150,13 +171,17 @@ bool BTSerialCommunicationManager::StartupWindowsSocket() {
     LogMessage("WSA failed to startup");
     return false;
   }
-
+#elif __APPLE__
+#endif
   return true;
 }
 
 void BTSerialCommunicationManager::LogError(const char* message) {
+#if _WIN32
   // message with port name and last error
   DriverLog("%s (%s) - Error: %s - WSA: %d", message, btSerialConfiguration_.name.c_str(), GetLastErrorAsString().c_str(), WSAGetLastError());
+  #elif __APPLE__
+#endif
 }
 
 void BTSerialCommunicationManager::LogMessage(const char* message) {

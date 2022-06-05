@@ -59,6 +59,8 @@ struct AnimationData {
 
 class IModelManager {
  public:
+  virtual ~IModelManager() {}
+
   virtual bool Load() = 0;
 
   virtual AnimationData GetAnimationDataByBoneIndex(const HandSkeletonBone& boneIndex, float f) const = 0;
@@ -72,7 +74,7 @@ class GLTFModelManager : public IModelManager {
   bool Load() override;
 
   AnimationData GetAnimationDataByBoneIndex(const HandSkeletonBone& boneIndex, const float f) const override;
-  Transform GetTransformByBoneIndex(const HandSkeletonBone& boneIndex) const;
+  Transform GetTransformByBoneIndex(const HandSkeletonBone& boneIndex) const override;
 
  private:
   void LoadInitialTransforms();

@@ -3,7 +3,7 @@
 #include <utility>
 
 #include "DriverLog.h"
-#include "Util/Windows.h"
+#include "Util/System.h"
 
 SerialCommunicationManager::SerialCommunicationManager(
     const VRCommunicationConfiguration& configuration, std::unique_ptr<EncodingManager> encodingManager)

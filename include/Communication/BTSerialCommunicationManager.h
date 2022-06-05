@@ -1,7 +1,14 @@
 #pragma once
 
-#include <WinSock2.h>
-#include <bluetoothapis.h>
+#if _WIN32
+  #include <WinSock2.h>
+  #include <bluetoothapis.h>
+#elif __APPLE__
+  #include <IOBluetooth/IOBluetoothUserLib.h>
+  #include <IOBluetooth/Bluetooth.h>
+  #define BTH_ADDR int
+  #define SOCKET int*
+#endif
 
 #include <atomic>
 #include <memory>
@@ -33,6 +40,6 @@ class BTSerialCommunicationManager : public CommunicationManager {
   VRCommunicationBTSerialConfiguration btSerialConfiguration_;
 
   std::atomic<bool> isConnected_ = false;
-
   std::atomic<SOCKET> btClientSocket_ = NULL;
+
 };

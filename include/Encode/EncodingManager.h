@@ -132,6 +132,7 @@ struct VROutput {
 class EncodingManager {
  public:
   explicit EncodingManager(VREncodingConfiguration configuration) : configuration_(std::move(configuration)){};
+  virtual ~EncodingManager() {}
 
   virtual VRInputData Decode(const std::string& input) = 0;
   virtual std::string Encode(const VROutput& data) = 0;

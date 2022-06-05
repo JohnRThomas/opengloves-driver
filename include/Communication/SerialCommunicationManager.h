@@ -1,6 +1,11 @@
 #pragma once
 
+#if _WIN32
 #include <Windows.h>
+#elif __APPLE__
+#define HANDLE int
+#define DWORD std::string
+#endif
 
 #include <atomic>
 #include <memory>

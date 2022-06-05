@@ -1,9 +1,8 @@
-#include "Util/Windows.h"
-
-#include <Windows.h>
-
+#include "Util/System.h"
 #include "DriverLog.h"
 
+#if _WIN32
+#include <Windows.h>
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 std::string GetDriverPath() {
@@ -61,3 +60,9 @@ std::string GetLastErrorAsString() {
 
   return message;
 }
+
+#elif __APPLE__
+std::string GetDriverPath() { return ""; }
+bool CreateBackgroundProcess(const std::string& path) { return false; }
+std::string GetLastErrorAsString() { return ""; }
+#endif

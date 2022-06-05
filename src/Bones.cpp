@@ -75,6 +75,9 @@ static HandSkeletonBone GetRootFingerBoneFromFingerIndex(const FingerIndex& fing
       return HandSkeletonBone::RingFinger0;
     case FingerIndex::PinkyFinger:
       return HandSkeletonBone::PinkyFinger0;
+    case FingerIndex::Unknown:
+      // Maybe throw an exception here?
+      return HandSkeletonBone::Root;
   }
 }
 

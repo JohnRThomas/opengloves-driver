@@ -1,14 +1,12 @@
 #pragma once
 
-#include <Windows.h>
-
 #include <atomic>
 #include <functional>
 #include <string>
 #include <thread>
 
 #include "DriverLog.h"
-#include "Util/Windows.h"
+#include "Util/System.h"
 
 static const int c_namedPipeDelay = 5;
 
@@ -16,9 +14,13 @@ enum class NamedPipeListenerState { Connecting, Reading, Callback };
 
 class IListener {
  public:
+  virtual ~IListener() {}
   virtual bool StartListening() = 0;
   virtual void StopListening() = 0;
 };
+
+#if _WIN32
+#include <Windows.h>
 
 template <typename T>
 struct NamedPipeListenerData {
@@ -195,3 +197,31 @@ class NamedPipeListener : public IListener {
 
   std::function<void(T*)> callback_;
 };
+
+#elif __APPLE__
+
+template <typename T>
+class NamedPipeListener : public IListener {
+ public:
+  explicit NamedPipeListener(std::string pipeName, const std::function<void(T*)>& callback) : IListener() {}
+
+  ~NamedPipeListener() {
+    StopListening();
+  }
+
+  bool StartListening() override {
+    return false;
+  }
+  void StopListening() override {
+  }
+  bool IsConnected() const {
+    return false;
+  }
+  void LogError(const char* error) const {
+    //DriverLog("%s (%s) - Error: %s", error, pipeName_.c_str(), GetLastErrorAsString().c_str());
+  }
+  void LogMessage(const char* message) const {
+    //DriverLog("%s (%s)", message, pipeName_.c_str());
+  }
+};
+#endif

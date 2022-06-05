@@ -6,7 +6,7 @@
 #include "DeviceDriver/KnuckleDriver.h"
 #include "DeviceDriver/LucidGloveDriver.h"
 #include "DriverLog.h"
-#include "Util/Windows.h"
+#include "Util/System.h"
 
 #ifndef GIT_COMMIT_HASH
 #define GIT_COMMIT_HASH "?"
